@@ -1,0 +1,263 @@
+<?php
+use App\app\Application;
+require_once __DIR__.'/vendor/autoload.php';
+
+
+    
+class raven
+    {
+    public function __construct()
+    {
+        $ShortOptions = 's:';
+        $LongOptions = ["Serve:", "help", "CreateController:", "cc:", "cm:", "CreateMigration:", "Migrate", "CreateModel:", "CreateMiddleware:"];
+        $options = getopt($ShortOptions, $LongOptions);
+
+        if (isset($options["s"]) || isset($options["Serve"])) {
+            $serve = isset($options["s"]) ? $options["s"] : $options["Serve"];
+            $pos = strpos($serve, ':');
+            $host = substr($serve, 0, $pos);
+            $port = substr($serve, $pos+1, strlen($serve) );
+            raven::serve($host, $port);
+        }
+
+        elseif (isset($options["cc"]) || isset($options["CreateController"])) {
+            $name = isset($options["cc"]) ? $options["cc"] : $options["CreateController"];
+            // if ($name=='') {
+            //     return raven::controllerError();
+            // }
+            raven::createcontroller($name);
+        }
+
+        elseif (isset($options["cm"]) || isset($options["CreateModel"])) {
+            $name = isset($options["cm"]) ? $options["cm"] : $options["CreateModel"];
+            // if ($name=='') {
+            //     return raven::modelError();
+            // }
+            raven::createmodel($name);
+        }
+
+        elseif (isset($options["h"]) || isset($options["help"])) {
+            raven::printout();
+        }
+
+        elseif (isset($options["CreateMigration"])) {
+            $name = isset($options["CreateMigration"]) ? $options["CreateMigration"] : $options["CreateMigration"];
+            raven::createMigration($name);
+        }
+
+        elseif (isset($options["CreateMiddleware"])) {
+            $name = isset($options["CreateMiddleware"]) ? $options["CreateMiddleware"] : $options["CreateMiddleware"];
+            raven::createMiddleware($name);
+        }
+
+        elseif (isset($options["Migrate"])) {
+            raven::migrate();
+        }
+
+        else {
+            raven::printout();
+        }
+    }
+
+    public function printout()
+    {
+        echo "php raven [option] <value>\n";
+        echo "example:-\n";
+        echo "php raven.php --Serve 127.0.0.1:8080\n";
+        echo "\n";
+        echo "[options]                    <values>\n";
+        echo "-h   , --help              : Print this message\n";
+        echo "-s   , --Serve             : Start PHP Development Server\n";
+        echo "--cc , --CreateController  : Create Controller Class\n";
+        echo "--CreateMiddleware         : Create Middleware Class\n";
+        echo "--cm , --CreateModel       : Create Model Class\n";
+        echo "--CreateMigration          : Create Migration Class\n";
+        echo "--Migrate                  : Migrate Databases\n";
+        
+    }
+    public function serve($host, $port)
+    {
+        system("php -S $host:$port -t public");
+    }
+    
+    public function createController($controller_name)
+    {
+        $template = "<?php
+        namespace App\controllers;
+
+        use App\app\Application;
+        use App\app\Controller;
+        use App\app\Request;
+        
+        class $controller_name extends Controller
+        {
+            public function func_name()
+            {
+                //Todo
+            }
+        }
+
+
+        ?>";
+        $file = fopen("controllers/$controller_name.php", 'w+');
+        fwrite($file, $template);
+        echo "new $controller_name created at /controllers/$controller_name\n";
+    }
+    public function controllerError()
+    {
+        echo "INVALID METHOD\n";
+        echo "php raven [option] <value>\n";
+        echo "php raven --CreateController ControllerName\n";
+        echo "use php raven -h for help.\n";   
+    }
+
+    public function createModel($model_name)
+    {
+        $name = strtolower($model_name);
+        $model_name = strtoupper($model_name);
+        $template = "<?php
+        namespace app\models;
+
+        use App\app\DbModel;
+        
+        class $model_name extends DbModel
+        {
+            /*
+
+            STEP 1-> Create Properties of All Columns;
+            STEP 2-> Create Attributes of All Columns;
+            Ready to Go...
+
+            */
+            //Define Properties Below
+            public string \$id = '';
+            /*public string \$column_name = '';*/
+            public string \$created_at = '';
+            public string \$updated_at = '';
+
+
+            public function tableName (): string
+            {
+                return \"$name\";
+            }
+        
+            public function register(){
+                return parent::save();
+            }
+
+            public function attributes(): array
+            {
+                //Add Attributes Below
+                return ['id', 'created_at', 'updated_at'];
+            }
+        
+        
+        
+        
+        
+        
+        
+        
+        }
+        ?>";
+        $file = fopen("models/$model_name.php", 'w+');
+        fwrite($file, $template);
+        echo "new $model_name created at /models/$model_name\n";
+    }
+
+    public function ModelError()
+    {
+        echo "INVALID METHOD\n";
+        echo "php raven [option] <value>\n";
+        echo "php raven --CreateModel ModelName\n";
+        echo "use php raven -h for help.\n";   
+    }
+
+
+    public function createMigration($migration_name)
+    {
+        $tableName = $migration_name;
+        $migration_name = 'm'.date('YmdHis')."_create_".strtolower($migration_name)."_table";
+
+        $template = "<?php
+        use App\app\Schema;
+        
+        class $migration_name extends Schema
+        {
+        
+            public function up()
+            {
+                /*This is table name*/
+                \$this->tableName = \"$tableName\";
+                /*Add Columns name and props*/
+                \$this->columns = [
+                    'id' => 'BIGINT(20) AUTO_INCREMENT PRIMARY KEY',
+                    'created_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+                    'updated_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+                ];
+        
+        
+        
+                \$this->create();
+        
+            }
+        
+            public function down()
+            {
+                \$this->dropIfExists();
+            }
+            
+        
+        }";
+        $file = fopen("migrations/$migration_name.php", 'w+');
+        fwrite($file, $template);
+        echo "new $migration_name created at /migrations/$migration_name\n";
+    }
+
+    public function migrate()
+    {
+        system("php migrations.php");
+    }
+
+    public function createMiddleware($middleware_name)
+    {
+
+        $template = "<?php
+        namespace App\middlewares;
+        use App\app\Controller;
+        use App\app\Request;
+        
+        class $middleware_name extends Controller
+        {
+            //Middleware are used to restrain from accesing Pages
+            
+            //Example:-
+            //This method send error if request method is GET.
+        
+            /*
+            public function restrict(Request \$request){
+                
+                if(\$request->isGet()){
+                    return \$this->abort(\"no authority\");
+                }
+            }
+        
+            */
+        }
+        
+        
+        
+        
+        ?>";
+        $file = fopen("middlewares/$middleware_name.php", 'w+');
+        fwrite($file, $template);
+        echo "new $middleware_name created at /migrations/$middleware_name\n";
+    }
+
+
+}
+
+$app = new raven();
+?>
+
+

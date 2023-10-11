@@ -1,0 +1,24 @@
+{
+    "name": "raven/raven",
+    "description": "The Raven Framework",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Muqadas Khaskheli",
+            "email": "muqadaskhaskheli123@gmail.com"
+        }
+    ],
+    "keywords": ["framework", "raven", "PHP", "MVC"],
+    "require": {
+        "php": ">=7.2.5",
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "App\\": "./"
+        }
+    }
+}
+
