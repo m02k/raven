@@ -1,6 +1,6 @@
 # raven web framework
 # Installation
-$composer create-project muqadaskk/raven /<path />
+$composer create-project muqadaskk/raven -Path-
 <br>
 $composer create-project muqadaskk/raven myApp
 
