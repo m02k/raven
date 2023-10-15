@@ -1,5 +1,10 @@
 # raven web framework
-# UNDER DEVELOPEMENT
+# Installation
+$composer create-project muqadaskk/raven <path>
+example:
+$composer create-project muqadaskk/raven myApp
+
+# Read Documentation For More.
 
 Well organized and easy to understand Web building framework with lots of built-in classes and methods.
 Fast: Raven is fast and efficient.
